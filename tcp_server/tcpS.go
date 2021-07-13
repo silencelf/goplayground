@@ -1,13 +1,11 @@
-package server
+package main
 
 import (
 	"bufio"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var count = 0
@@ -15,20 +13,30 @@ var count = 0
 func handleConnection(c net.Conn) {
 	fmt.Println(".")
 	for {
-		netData, err := bufio.NewReader(c).ReadString('\n')
+		reader := bufio.NewReader(c)
+		req, err := http.ReadRequest(reader)
 		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		if strings.TrimSpace(string(netData)) == "STOP" {
+			fmt.Println(err.Error())
 			break
 		}
 
-		fmt.Println(c.RemoteAddr(), "-> ", string(netData))
-		counter := strconv.Itoa(count) + " "
-		t := time.Now()
-		resp := counter + t.Format(time.RFC3339) + "\n"
-		c.Write([]byte(resp))
+		fmt.Println(req.URL.Path)
+		/*
+			netData, err := bufio.NewReader(c).ReadString('\n')
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			if strings.TrimSpace(string(netData)) == "STOP" {
+				break
+			}
+
+			fmt.Println(c.RemoteAddr(), "-> ", string(netData))
+			counter := strconv.Itoa(count) + " "
+			t := time.Now()
+			resp := counter + t.Format(time.RFC3339) + "\n"
+			c.Write([]byte(resp))
+		*/
 	}
 	c.Close()
 }
@@ -36,12 +44,14 @@ func handleConnection(c net.Conn) {
 func main() {
 	arguments := os.Args
 	fmt.Println(arguments)
-	if len(arguments) == 1 {
-		fmt.Println("Please provide port number")
+	port := ":5004"
+	if len(arguments) == 2 {
+		port = ":" + arguments[1]
+	} else {
+		fmt.Println("no port provided, using default " + port)
 	}
 
-	PORT := ":" + arguments[1]
-	l, err := net.Listen("tcp", PORT)
+	l, err := net.Listen("tcp", port)
 	if err != nil {
 		fmt.Println(err)
 		return
