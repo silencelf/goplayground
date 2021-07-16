@@ -1,32 +1,55 @@
 package main
 
 import (
-    "fmt"
-    "playground/stack"
+	"fmt"
+	"playground/stack"
 )
 
 func dailyTemperatures(temperatures []int) []int {
-    s := stack.NewStack()
-    for !s.IsEmpty() {
-        fmt.Println(s.Pop())
-    }
+	result := make([]int, len(temperatures))
+	s := stack.NewStack()
 
-    for _, i := range(temperatures) {
-        top, err := s.Peek()
-        if err != nil || top >= i {
-            s.Push(i)
-        }
-    }
-    fmt.Println("stack: ", s)
+	for index, value := range temperatures {
+		top, err := s.Peek()
+		if err != nil || temperatures[top] >= value {
+			s.Push(index)
+		} else {
+			for {
+				top, err = s.Peek()
+				if err != nil || temperatures[top] >= value {
+					s.Push(index)
+					break
+				}
+				s.Pop()
+				result[top] = index - top
+			}
+		}
+	}
 
-    return temperatures
+	return result
 }
 
 func main() {
-    temperatures := []int{73,74,75,71,69,72,76,73}
-    fmt.Println(temperatures)
-    expected := []int{1,1,4,2,1,1,0,0}
-    fmt.Println(expected)
-    result := dailyTemperatures(temperatures)
-    fmt.Println(result)
+	var temperatures, expected, result []int
+
+	temperatures = []int{73, 74, 75, 71, 69, 72, 76, 73}
+	expected = []int{1, 1, 4, 2, 1, 1, 0, 0}
+	fmt.Println(temperatures)
+	fmt.Println("expected", expected)
+	result = dailyTemperatures(temperatures)
+	fmt.Println("result: ", result)
+
+	temperatures = []int{30, 40, 50, 60}
+	expected = []int{1, 1, 1, 0}
+	fmt.Println(temperatures)
+	fmt.Println("expected", expected)
+	result = dailyTemperatures(temperatures)
+	fmt.Println("result: ", result)
+
+	temperatures = []int{30, 60, 90}
+	expected = []int{1, 1, 0}
+	fmt.Println(temperatures)
+	fmt.Println("expected", expected)
+	result = dailyTemperatures(temperatures)
+	fmt.Println("result: ", result)
 }
