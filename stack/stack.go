@@ -34,3 +34,15 @@ func (s *Stack) Pop() (int, error) {
 
     return res, nil
 }
+
+func (s *Stack) Peek() (int, error) {
+    if len(s.value) == 0 {
+        return 0, errors.New("Empty Stack")
+    }
+
+    return s.value[0], nil
+}
+
+func (s *Stack) IsEmpty() bool {
+    return len(s.value) == 0
+}
