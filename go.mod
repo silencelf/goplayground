@@ -1,4 +1,4 @@
-module main
+module playground
 
 go 1.16
 
