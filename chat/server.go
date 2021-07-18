@@ -67,11 +67,6 @@ func (s *server) join(c *client, args []string) {
 	}
 
 	r.members[c.conn.RemoteAddr()] = c
-
-	if c.room != nil {
-
-	}
-
 	c.room = r
 
 	r.broadcast(c, fmt.Sprintf("%s has joined the room", c.nick))
