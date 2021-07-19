@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"net"
 	pb "playground/grpcdemo/chat"
@@ -18,6 +19,29 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	log.Printf("receive message body from client %s", in.Body)
 	return &pb.HelloResponse{Body: "Hello from the server!"}, nil
 }
+
+func (s *server) Average(stream pb.ChatService_AverageServer) error {
+	var values []float32
+	average := float32(0)
+	for {
+		v, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&pb.AverageMessage{
+				Value: average,
+			})
+		}
+		if err != nil {
+			return err
+		}
+		values = append(values, v.Value)
+		sum := float32(0)
+		for i := 0; i < len(values); i++ {
+			sum += values[i]
+		}
+		average = sum / float32(len(values))
+	}
+}
+
 func main() {
 	lis, err := net.Listen("tcp", ":9000")
 	if err != nil {

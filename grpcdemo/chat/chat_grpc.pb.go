@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChatServiceClient interface {
 	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
+	Average(ctx context.Context, opts ...grpc.CallOption) (ChatService_AverageClient, error)
 }
 
 type chatServiceClient struct {
@@ -38,11 +39,46 @@ func (c *chatServiceClient) SayHello(ctx context.Context, in *HelloRequest, opts
 	return out, nil
 }
 
+func (c *chatServiceClient) Average(ctx context.Context, opts ...grpc.CallOption) (ChatService_AverageClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ChatService_ServiceDesc.Streams[0], "/chat.ChatService/Average", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &chatServiceAverageClient{stream}
+	return x, nil
+}
+
+type ChatService_AverageClient interface {
+	Send(*AverageMessage) error
+	CloseAndRecv() (*AverageMessage, error)
+	grpc.ClientStream
+}
+
+type chatServiceAverageClient struct {
+	grpc.ClientStream
+}
+
+func (x *chatServiceAverageClient) Send(m *AverageMessage) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *chatServiceAverageClient) CloseAndRecv() (*AverageMessage, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(AverageMessage)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ChatServiceServer is the server API for ChatService service.
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility
 type ChatServiceServer interface {
 	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
+	Average(ChatService_AverageServer) error
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -52,6 +88,9 @@ type UnimplementedChatServiceServer struct {
 
 func (UnimplementedChatServiceServer) SayHello(context.Context, *HelloRequest) (*HelloResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+}
+func (UnimplementedChatServiceServer) Average(ChatService_AverageServer) error {
+	return status.Errorf(codes.Unimplemented, "method Average not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 
@@ -84,6 +123,32 @@ func _ChatService_SayHello_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ChatService_Average_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ChatServiceServer).Average(&chatServiceAverageServer{stream})
+}
+
+type ChatService_AverageServer interface {
+	SendAndClose(*AverageMessage) error
+	Recv() (*AverageMessage, error)
+	grpc.ServerStream
+}
+
+type chatServiceAverageServer struct {
+	grpc.ServerStream
+}
+
+func (x *chatServiceAverageServer) SendAndClose(m *AverageMessage) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *chatServiceAverageServer) Recv() (*AverageMessage, error) {
+	m := new(AverageMessage)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -96,6 +161,12 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ChatService_SayHello_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Average",
+			Handler:       _ChatService_Average_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "chat/chat.proto",
 }

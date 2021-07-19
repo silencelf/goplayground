@@ -12,6 +12,11 @@ message HelloResponse {
 	string body = 1;
 }
 
+message AverageMessage {
+	float value = 1;
+}
+
 service ChatService {
 	rpc SayHello(HelloRequest) returns (HelloResponse) {}
+	rpc Average(stream AverageMessage) returns (AverageMessage) {}
 }
