@@ -2,8 +2,7 @@ package main
 
 import (
 	"log"
-	"playground/trygrpc/chat"
-	pb "playground/trygrpc/chat"
+	pb "playground/grpcdemo/chat"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -22,7 +21,7 @@ func main() {
 
 	c := pb.NewChatServiceClient(conn)
 
-	response, err := c.SayHello(context.Background(), &chat.HelloRequest{Body: "Hello From Client!"})
+	response, err := c.SayHello(context.Background(), &pb.HelloRequest{Body: "Hello From Client!"})
 	if err != nil {
 		log.Fatalf("Error when calling SayHello: %s", err)
 	}

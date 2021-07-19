@@ -4,18 +4,18 @@ import (
 	"context"
 	"log"
 	"net"
-	"playground/trygrpc/chat"
+	pb "playground/grpcdemo/chat"
 
 	"google.golang.org/grpc"
 )
 
 type server struct {
-	chat.UnimplementedChatServiceServer
+	pb.UnimplementedChatServiceServer
 }
 
-func (s *server) SayHello(ctx context.Context, in *chat.HelloRequest) (*chat.HelloResponse, error) {
+func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloResponse, error) {
 	log.Printf("receive message body from client %s", in.Body)
-	return &chat.HelloResponse{Body: "Hello from the server!"}, nil
+	return &pb.HelloResponse{Body: "Hello from the server!"}, nil
 }
 func main() {
 	lis, err := net.Listen("tcp", ":9000")
@@ -24,7 +24,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	chat.RegisterChatServiceServer(grpcServer, &server{})
+	pb.RegisterChatServiceServer(grpcServer, &server{})
 	log.Printf("server listening at %v", lis.Addr())
 
 	if err := grpcServer.Serve(lis); err != nil {
