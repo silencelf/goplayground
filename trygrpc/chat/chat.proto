@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "./";
+
+message HelloRequest {
+	string body = 1;
+}
+
+message HelloResponse {
+	string body = 1;
+}
+
+service ChatService {
+	rpc SayHello(HelloRequest) returns (HelloResponse) {}
+}
