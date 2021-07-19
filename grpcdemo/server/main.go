@@ -7,6 +7,7 @@ import (
 	pb "playground/grpcdemo/chat"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type server struct {
@@ -25,6 +26,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterChatServiceServer(grpcServer, &server{})
+	reflection.Register(grpcServer)
 	log.Printf("server listening at %v", lis.Addr())
 
 	if err := grpcServer.Serve(lis); err != nil {
