@@ -33,6 +33,8 @@ func (s *server) Average(stream pb.ChatService_AverageServer) error {
 		if err != nil {
 			return err
 		}
+		// this is straight forward but not efficient,
+		// I'll leave it here for now
 		values = append(values, v.Value)
 		sum := float32(0)
 		for i := 0; i < len(values); i++ {
