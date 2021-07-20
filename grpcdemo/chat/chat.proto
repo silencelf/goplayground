@@ -16,7 +16,12 @@ message AverageMessage {
 	float value = 1;
 }
 
+message MaxMessage {
+	int32 value = 1;
+}
+
 service ChatService {
 	rpc SayHello(HelloRequest) returns (HelloResponse) {}
 	rpc Average(stream AverageMessage) returns (AverageMessage) {}
+	rpc Max(stream MaxMessage) returns (stream MaxMessage) {}
 }

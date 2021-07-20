@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ChatServiceClient interface {
 	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 	Average(ctx context.Context, opts ...grpc.CallOption) (ChatService_AverageClient, error)
+	Max(ctx context.Context, opts ...grpc.CallOption) (ChatService_MaxClient, error)
 }
 
 type chatServiceClient struct {
@@ -73,12 +74,44 @@ func (x *chatServiceAverageClient) CloseAndRecv() (*AverageMessage, error) {
 	return m, nil
 }
 
+func (c *chatServiceClient) Max(ctx context.Context, opts ...grpc.CallOption) (ChatService_MaxClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ChatService_ServiceDesc.Streams[1], "/chat.ChatService/Max", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &chatServiceMaxClient{stream}
+	return x, nil
+}
+
+type ChatService_MaxClient interface {
+	Send(*MaxMessage) error
+	Recv() (*MaxMessage, error)
+	grpc.ClientStream
+}
+
+type chatServiceMaxClient struct {
+	grpc.ClientStream
+}
+
+func (x *chatServiceMaxClient) Send(m *MaxMessage) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *chatServiceMaxClient) Recv() (*MaxMessage, error) {
+	m := new(MaxMessage)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ChatServiceServer is the server API for ChatService service.
 // All implementations must embed UnimplementedChatServiceServer
 // for forward compatibility
 type ChatServiceServer interface {
 	SayHello(context.Context, *HelloRequest) (*HelloResponse, error)
 	Average(ChatService_AverageServer) error
+	Max(ChatService_MaxServer) error
 	mustEmbedUnimplementedChatServiceServer()
 }
 
@@ -91,6 +124,9 @@ func (UnimplementedChatServiceServer) SayHello(context.Context, *HelloRequest) (
 }
 func (UnimplementedChatServiceServer) Average(ChatService_AverageServer) error {
 	return status.Errorf(codes.Unimplemented, "method Average not implemented")
+}
+func (UnimplementedChatServiceServer) Max(ChatService_MaxServer) error {
+	return status.Errorf(codes.Unimplemented, "method Max not implemented")
 }
 func (UnimplementedChatServiceServer) mustEmbedUnimplementedChatServiceServer() {}
 
@@ -149,6 +185,32 @@ func (x *chatServiceAverageServer) Recv() (*AverageMessage, error) {
 	return m, nil
 }
 
+func _ChatService_Max_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ChatServiceServer).Max(&chatServiceMaxServer{stream})
+}
+
+type ChatService_MaxServer interface {
+	Send(*MaxMessage) error
+	Recv() (*MaxMessage, error)
+	grpc.ServerStream
+}
+
+type chatServiceMaxServer struct {
+	grpc.ServerStream
+}
+
+func (x *chatServiceMaxServer) Send(m *MaxMessage) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *chatServiceMaxServer) Recv() (*MaxMessage, error) {
+	m := new(MaxMessage)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ChatService_ServiceDesc is the grpc.ServiceDesc for ChatService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -165,6 +227,12 @@ var ChatService_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Average",
 			Handler:       _ChatService_Average_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "Max",
+			Handler:       _ChatService_Max_Handler,
+			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},

@@ -44,6 +44,35 @@ func (s *server) Average(stream pb.ChatService_AverageServer) error {
 	}
 }
 
+func (s *server) Max(stream pb.ChatService_MaxServer) error {
+	// is this thread safe?
+	values := []int32{1}
+	waitc := make(chan struct{})
+	go func() {
+		for {
+			in, err := stream.Recv()
+			if err == io.EOF {
+				close(waitc)
+				return
+			}
+			if err != nil {
+				log.Fatalf("failed to recieve a value: %v", err)
+			}
+			log.Printf("got message %v", in)
+			values = append(values, in.Value)
+			log.Printf("values: %v", values)
+		}
+	}()
+
+	for _, v := range values {
+		if err := stream.Send(&pb.MaxMessage{Value: v}); err != nil {
+			log.Fatalf("failed to send a value: %v", err)
+		}
+	}
+	<-waitc
+	return nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", ":9000")
 	if err != nil {
