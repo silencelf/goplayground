@@ -28,11 +28,7 @@ func main() {
 	for scanner.Scan() {
 		ip := scanner.Text()
 		name := getCountryName(db, ip)
-		if _, ok := c[name]; ok {
-			c[name]++
-		} else {
-			c[name] = 1
-		}
+		c[name]++
 	}
 
 	fmt.Println(c)
