@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package chat;
+
+option go_package = "./";
+
+message HelloRequest {
+	string body = 1;
+}
+
+message HelloResponse {
+	string body = 1;
+}
+
+message AverageMessage {
+	float value = 1;
+}
+
+message MaxMessage {
+	int32 value = 1;
+}
+
+service ChatService {
+	rpc SayHello(HelloRequest) returns (HelloResponse) {}
+	rpc Average(stream AverageMessage) returns (AverageMessage) {}
+	rpc Max(stream MaxMessage) returns (stream MaxMessage) {}
+}
