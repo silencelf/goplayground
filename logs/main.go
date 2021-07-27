@@ -13,7 +13,7 @@ import (
 func main() {
 	file, err := os.Open("ip.txt")
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Fatal(err)
 	}
 	defer file.Close()
 
@@ -27,7 +27,7 @@ func main() {
 
 	for scanner.Scan() {
 		ip := scanner.Text()
-		name := printCountry(db, ip)
+		name := getCountryName(db, ip)
 		if _, ok := c[name]; ok {
 			c[name]++
 		} else {
@@ -38,7 +38,7 @@ func main() {
 	fmt.Println(c)
 }
 
-func printCountry(db *geoip2.Reader, ipAddr string) string {
+func getCountryName(db *geoip2.Reader, ipAddr string) string {
 	// If you are using strings that may be invalid, check that ip is not nil
 	ip := net.ParseIP(ipAddr)
 	record, err := db.Country(ip)
@@ -50,4 +50,3 @@ func printCountry(db *geoip2.Reader, ipAddr string) string {
 	//fmt.Printf("Coordinates: %v, %v\n", record.Location.Latitude, record.Location.Longitude)
 	return record.Country.Names["zh-CN"]
 }
-
