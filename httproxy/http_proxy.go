@@ -50,10 +50,10 @@ type proxy struct {
 }
 
 func (p *proxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
-	log.Println(req.RemoteAddr, " ", req.Method, " ", req.URL)
+	log.Println("incomming: ", req.RemoteAddr, " ", req.Method, " ", req.URL)
 
-	if req.URL.Scheme != "http" && req.URL.Scheme != "https" {
-	    msg := "unsupported protocal scheme " + req.URL.Scheme
+	if !strings.Contains(req.Proto, "HTTP") {
+		msg := "unsupported protocal scheme " + req.Proto
 		http.Error(wr, msg, http.StatusBadRequest)
 		log.Println(msg)
 		return
@@ -74,7 +74,8 @@ func (p *proxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	resp, err := client.Do(req)
 	if err != nil {
 		http.Error(wr, "Server Error", http.StatusInternalServerError)
-		log.Fatal("ServeHTTP:", err)
+		log.Print("ServeHTTP:", err)
+		return
 	}
 	defer resp.Body.Close()
 
@@ -88,7 +89,7 @@ func (p *proxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	var addr = flag.String("addr", "127.0.0.1:8080", "The addr of the application.")
+	var addr = flag.String("addr", "127.0.0.1:3000", "The addr of the application.")
 	flag.Parse()
 
 	handler := &proxy{}
