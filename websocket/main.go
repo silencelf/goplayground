@@ -19,6 +19,8 @@ func main() {
 		time.Sleep(5 * time.Second)
 		runClient()
 	}()
+	fileServer := http.FileServer(http.Dir("./www"))
+	http.Handle("/", fileServer)
 
 	http.Handle("/echo", websocket.Handler(echoHandler))
 	err := http.ListenAndServe(":3000", nil)
