@@ -78,7 +78,7 @@ func (s *server) listRooms(c *client, args []string) {
 	for name := range s.rooms {
 		rooms = append(rooms, name)
 	}
-	c.msg(fmt.Sprintf("availabel rooms are %s", strings.Join(rooms, ", ")))
+	c.msg(fmt.Sprintf("available rooms are %s", strings.Join(rooms, ", ")))
 }
 
 func (s *server) msg(c *client, args []string) {
