@@ -1,10 +1,13 @@
+<!DOCTYPE html>
 <script>
     // Create WebSocket connection.
     const socket = new WebSocket("ws://127.0.0.1:3000/echo");
 
     // Connection opened
     socket.addEventListener("open", (event) => {
-        socket.send("Hello Server!");
+        setInterval(() => {
+            socket.send("Hello Server! " + new Date());
+        }, 3000);
     });
 
     // Listen for messages

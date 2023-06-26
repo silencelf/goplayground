@@ -89,7 +89,7 @@ func (p *proxy) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	var addr = flag.String("addr", "127.0.0.1:3000", "The addr of the application.")
+	var addr = flag.String("addr", "127.0.0.1:3000", "The listening address.")
 	flag.Parse()
 
 	handler := &proxy{}
