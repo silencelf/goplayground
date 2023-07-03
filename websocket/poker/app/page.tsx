@@ -3,10 +3,22 @@ import Image from 'next/image'
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="hover:bg-sky-700 z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        body?
-      </div>
-
+      <ul className="flex w-full">
+        {[
+          ['0', 0],
+          ['1', 1],
+          ['2', 2],
+          ['3', 3],
+          ['5', 5],
+          ['8', 8],
+        ].map(([title, val]) => (
+          <li key={title} className="">
+            <a key={title} className="rounded-lg px-3 py-2 text-slate-700 font-medium hover:bg-slate-100 hover:text-slate-900">{title}</a>
+          </li>
+        ))}
+        <li className="justify-end"><input type="button" value="Show" /></li>
+      </ul>
+       
       <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
         <a
           href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
