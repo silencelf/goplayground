@@ -1,23 +1,34 @@
 import Image from 'next/image'
+import Button from './components/button';
 
 export default function Home() {
+  const points = [
+    ['0', 0],
+    ['1', 1],
+    ['2', 2],
+    ['3', 3],
+    ['5', 5],
+    ['8', 8],
+    ['13', 13],
+    ['21', 21],
+    ['?', 21],
+  ];
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <ul className="flex w-full">
-        {[
-          ['0', 0],
-          ['1', 1],
-          ['2', 2],
-          ['3', 3],
-          ['5', 5],
-          ['8', 8],
-        ].map(([title, val]) => (
-          <li key={title} className="">
-            <a key={title} className="rounded-lg px-3 py-2 text-slate-700 font-medium hover:bg-slate-100 hover:text-slate-900">{title}</a>
-          </li>
-        ))}
-        <li className="justify-end"><input type="button" value="Show" /></li>
-      </ul>
+      <div id="actions" className="grid w-full min-w-fit lg:grid-cols-[2fr,1fr] lg:text-left ">
+        <ul className="flex bg-gradient-to-r from-blue-500 to-gray-500 rounded-lg">
+          {points.map(([title, val]) => (
+            <li key={title} className="px-2">
+              <button className="rounded-lg px-3 py-2 text-slate-700 font-medium hover:bg-slate-100 hover:text-slate-900 transition-colors">{title}</button>
+            </li>
+          ))}
+        </ul>
+        <ul className='flex justify-end my-5 lg:my-0'>
+          <li className="px-5"><Button>Show</Button></li>
+          <li><Button>Clear</Button></li>
+        </ul>
+      </div>
        
       <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
         <a
