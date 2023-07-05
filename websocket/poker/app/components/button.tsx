@@ -8,7 +8,7 @@ type ButtonProps = {
 }
 
 export default function Button (props: ButtonProps) {
-    return <button className='bg-blue-400 rounded-lg px-3 py-2 text-slate-700 font-medium hover:bg-slate-100 hover:text-slate-900'>
+    return <button onClick={props.onClick} className='bg-blue-400 rounded-lg px-3 py-2 text-slate-700 font-medium hover:bg-slate-100 hover:text-slate-900 shadow'>
         {props.children}
     </button>
 };
