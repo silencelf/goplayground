@@ -1,31 +1,46 @@
 "use client";
 
-import Image from "next/image";
-import Button from "./components/button";
-import { useEffect } from "react";
+import { setuid } from "process";
+import Button from "../components/button";
+import { useEffect, useState } from "react";
 
 function handleSizeClick(value: string | number) {
   alert(value);
 }
 
-export default function Home() {
+type action = {
+  roomId: string;
+  userId: string;
+  type: string;
+  payload: object
+}
+
+export default function Room({ params }: { params: { roomId: string } }) {
+  const [userId, setUserId] = useState('');
+  const [hasUser, setHasUser] = useState(false);
   useEffect(() => {
-    var conn = new WebSocket("ws://localhost:3000" + "/api/");
+    var conn = new WebSocket("ws://localhost:8080/ws");
     conn.onclose = function (evt) {
       console.log(evt);
-      console.log('ws closed');
+      console.log("ws closed");
     };
 
-    conn.onopen = function(evt) { console.log('ws connected')};
+    conn.onopen = function (evt) {
+      console.log("ws connected");
+    };
 
     conn.onmessage = function (evt) {
-        var messages = evt.data.split('\n');
-        for (var i = 0; i < messages.length; i++) {
-          console.log(messages[i]);
-        }
+      var messages = evt.data.split("\n");
+      for (var i = 0; i < messages.length; i++) {
+        console.log(messages[i]);
+      }
     };
-  }, []);
 
+    return function() {
+      console.log('cleanup connections.');
+      conn.close();
+    }
+  }, [params.roomId]);
 
   const points = [
     ["0", 0],
@@ -41,14 +56,27 @@ export default function Home() {
 
   const estimations = [];
   for (let i = 0; i < 20; i++) {
-    estimations.push({ name: "name" + i, vote: i });
+    const shape = '♤♧♡♢'[i % 4];
+    estimations.push({ name: "name" + i, vote: i, shape: shape });
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-4 lg:p-24">
+    <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
+      {
+        !hasUser &&
+        <div className="px-3 py-2">
+          Please enter your name:
+          <p>
+            <input id="userName" value={userId} onChange={(e)=> setUserId(e.target.value)}></input>
+            <button onClick={()=> setHasUser(true)}>Confirm</button>
+          </p>
+        </div>
+      }
+
+      {/* <div className="w-full py-2 text-left">{params.roomId}</div> */}
       <div
         id="actions"
-        className="grid w-full min-w-fit lg:grid-cols-[2fr,1fr] lg:text-left"
+        className="grid w-full min-w-fit lg:grid-cols-[2fr,1fr] lg:text-left lg:mb-4"
       >
         <ul className="flex bg-gradient-to-br from-blue-500 to-gray-500 rounded-lg shadow">
           {points.map(([title, val]) => (
@@ -74,17 +102,16 @@ export default function Home() {
 
       <div id="pokers-container" className="w-full lg:mt-5 mb-32 lg:mb-0">
         <ul className="flex flex-wrap justify-center">
-          {estimations.map(({ name, vote }) => (
+          {estimations.map(({ name, vote, shape }) => (
             <li key={name} className="px-16 py-2">
               <div className="bg-gradient-to-br from-cyan-300 to-blue-300  w-24 h-36 rounded-lg text-center inline-block shadow-md text-poker hover:border">
-                <span>{vote}</span>
+                <span>{shape}</span>
               </div>
               <div className="text-center">{name}</div>
             </li>
           ))}
         </ul>
       </div>
-
     </main>
   );
 }
