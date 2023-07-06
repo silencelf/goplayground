@@ -2,12 +2,31 @@
 
 import Image from "next/image";
 import Button from "./components/button";
+import { useEffect } from "react";
 
 function handleSizeClick(value: string | number) {
   alert(value);
 }
 
 export default function Home() {
+  useEffect(() => {
+    var conn = new WebSocket("ws://localhost:3000" + "/api/");
+    conn.onclose = function (evt) {
+      console.log(evt);
+      console.log('ws closed');
+    };
+
+    conn.onopen = function(evt) { console.log('ws connected')};
+
+    conn.onmessage = function (evt) {
+        var messages = evt.data.split('\n');
+        for (var i = 0; i < messages.length; i++) {
+          console.log(messages[i]);
+        }
+    };
+  }, []);
+
+
   const points = [
     ["0", 0],
     ["1", 1],
@@ -26,7 +45,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen flex-col items-center justify-between p-4 lg:p-24">
       <div
         id="actions"
         className="grid w-full min-w-fit lg:grid-cols-[2fr,1fr] lg:text-left"
