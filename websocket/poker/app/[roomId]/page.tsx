@@ -1,8 +1,8 @@
 "use client";
 
-import { setuid } from "process";
 import Button from "../components/button";
 import { useEffect, useState } from "react";
+import UserName from "../components/userName";
 
 function handleSizeClick(value: string | number) {
   alert(value);
@@ -12,12 +12,22 @@ type action = {
   roomId: string;
   userId: string;
   type: string;
-  payload: object
+  payload: object;
 }
 
 export default function Room({ params }: { params: { roomId: string } }) {
-  const [userId, setUserId] = useState('');
+  const [user, setUser] = useState({ id: '' ,name: ''});
   const [hasUser, setHasUser] = useState(false);
+
+  useEffect(() => {
+    try {
+      const tempUser = JSON.parse(localStorage['poker_user']);
+      setUser(tempUser);
+    } catch(e) {
+      console.log(e);
+    }
+  }, [params.roomId]);
+
   useEffect(() => {
     var conn = new WebSocket("ws://localhost:8080/ws");
     conn.onclose = function (evt) {
@@ -42,6 +52,17 @@ export default function Room({ params }: { params: { roomId: string } }) {
     }
   }, [params.roomId]);
 
+  function setUserName(name: string) {
+    const user = { id: '', name };
+    setUser(user);
+    try {
+      const tempUser = JSON.stringify(user);
+      localStorage['poker_user'] = tempUser;
+    } catch(e) {
+      console.log(e);
+    }
+  }
+
   const points = [
     ["0", 0],
     ["1", 1],
@@ -63,14 +84,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
       {
-        !hasUser &&
-        <div className="px-3 py-2">
-          Please enter your name:
-          <p>
-            <input id="userName" value={userId} onChange={(e)=> setUserId(e.target.value)}></input>
-            <button onClick={()=> setHasUser(true)}>Confirm</button>
-          </p>
-        </div>
+        !hasUser && <UserName name={user?.name} onChange={setUserName}></UserName>
       }
 
       {/* <div className="w-full py-2 text-left">{params.roomId}</div> */}
