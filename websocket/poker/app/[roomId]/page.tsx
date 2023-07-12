@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import UserName from "../components/userName";
-import Button from "../components/button";
+import UserName from "../components/UserName";
+import Button from "../components/Button";
 
 function handleSizeClick(value: string | number) {
   alert(value);
@@ -13,18 +13,19 @@ type action = {
   userId: string;
   type: string;
   payload: object;
-}
+};
 
 export default function Room({ params }: { params: { roomId: string } }) {
-  const [user, setUser] = useState({ id: '' ,name: ''});
+  const [user, setUser] = useState({ id: "", name: "" });
 
   useEffect(() => {
-    console.log('loading user...');
-    try {
-      const user = JSON.parse(localStorage['poker_user']);
-      setUser(user);
-    } catch(e) {
-      console.log(e);
+    console.log("loading user...");
+    if (localStorage["poker_user"]) {
+      try {
+        setUser(JSON.parse(localStorage["poker_user"]));
+      } catch (e) {
+        console.log(e);
+      }
     }
   }, [params.roomId]);
 
@@ -46,19 +47,19 @@ export default function Room({ params }: { params: { roomId: string } }) {
       }
     };
 
-    return function() {
-      console.log('cleanup connections.');
+    return function () {
+      console.log("cleanup connections.");
       conn.close();
-    }
+    };
   }, [params.roomId]);
 
   function setUserName(name: string) {
-    const user = { id: '', name };
+    const user = { id: "", name };
     setUser(user);
     try {
       const tempUser = JSON.stringify(user);
-      localStorage['poker_user'] = tempUser;
-    } catch(e) {
+      localStorage["poker_user"] = tempUser;
+    } catch (e) {
       console.log(e);
     }
   }
@@ -77,15 +78,15 @@ export default function Room({ params }: { params: { roomId: string } }) {
 
   const estimations = [];
   for (let i = 0; i < 20; i++) {
-    const shape = '♤♧♡♢'[i % 4];
+    const shape = "♤♧♡♢"[i % 4];
     estimations.push({ name: "name" + i, vote: i, shape: shape });
   }
 
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
-      {
-        user.name && <UserName name={user?.name} onConfirmClick={setUserName}></UserName>
-      }
+      {user.name && (
+        <UserName name={user?.name} onConfirmClick={setUserName}></UserName>
+      )}
 
       {/* <div className="w-full py-2 text-left">{params.roomId}</div> */}
       <div
