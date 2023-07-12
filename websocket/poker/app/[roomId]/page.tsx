@@ -1,8 +1,8 @@
 "use client";
 
-import Button from "../components/button";
 import { useEffect, useState } from "react";
 import UserName from "../components/userName";
+import Button from "../components/button";
 
 function handleSizeClick(value: string | number) {
   alert(value);
@@ -17,12 +17,12 @@ type action = {
 
 export default function Room({ params }: { params: { roomId: string } }) {
   const [user, setUser] = useState({ id: '' ,name: ''});
-  const [hasUser, setHasUser] = useState(false);
 
   useEffect(() => {
+    console.log('loading user...');
     try {
-      const tempUser = JSON.parse(localStorage['poker_user']);
-      setUser(tempUser);
+      const user = JSON.parse(localStorage['poker_user']);
+      setUser(user);
     } catch(e) {
       console.log(e);
     }
@@ -84,7 +84,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
       {
-        !hasUser && <UserName name={user?.name} onChange={setUserName}></UserName>
+        user.name && <UserName name={user?.name} onConfirmClick={setUserName}></UserName>
       }
 
       {/* <div className="w-full py-2 text-left">{params.roomId}</div> */}
