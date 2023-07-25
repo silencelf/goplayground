@@ -1,17 +1,17 @@
-import { ReactNode } from "react";
+import { ReactNode, memo } from "react";
 
 type ButtonProps = {
   onClick?: () => void;
   children: ReactNode;
 };
 
-export default function Button(props: ButtonProps) {
+export default memo(function Button({ onClick, children }: ButtonProps) {
   return (
     <button
-      onClick={props.onClick}
+      onClick={onClick}
       className="bg-blue-400 rounded-lg px-3 py-2 text-slate-700 font-medium hover:bg-slate-100 hover:text-slate-900 shadow"
     >
-      {props.children}
+      {children}
     </button>
   );
-}
+});

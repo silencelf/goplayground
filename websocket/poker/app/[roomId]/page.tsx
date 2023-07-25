@@ -27,6 +27,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
         console.log(e);
       }
     }
+    return () => { console.log('cleanup phase 1'); };
   }, [params.roomId]);
 
   useEffect(() => {

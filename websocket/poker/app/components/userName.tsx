@@ -5,9 +5,8 @@ type UserNameProps = {
   name: string;
 };
 
-
-export default function UserName(props: UserNameProps) {
-  const [name, setName] = useState(props.name)
+export default function UserName({ name, onConfirmClick }: UserNameProps) {
+  const [nameValue, setName] = useState(name)
 
   return (
     <div className="px-3 py-2">
@@ -15,10 +14,10 @@ export default function UserName(props: UserNameProps) {
       <p>
         <input
           id="userName"
-          value={name}
+          value={nameValue}
           onChange={(e) => setName(e.target.value)}
         />
-        <button onClick={(e) => props.onConfirmClick(name)}>Confirm</button>
+        <button onClick={(e) => onConfirmClick(nameValue)}>Confirm</button>
       </p>
     </div>
   );
