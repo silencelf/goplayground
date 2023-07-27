@@ -54,7 +54,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
     };
   }, [params.roomId]);
 
-  function setUserName(name: string) {
+  function saveUserName(name: string) {
     const user = { id: "", name };
     setUser(user);
     try {
@@ -86,7 +86,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
       {user.name && (
-        <UserName name={user?.name} onConfirmClick={setUserName}></UserName>
+        <UserName userName={user?.name} onConfirmClick={saveUserName}></UserName>
       )}
 
       {/* <div className="w-full py-2 text-left">{params.roomId}</div> */}
