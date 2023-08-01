@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import UserName from "../components/UserName";
 import Button from "../components/Button";
+import useWebSocket from "./useWebsocket";
 
 function handleSizeClick(value: string | number) {
   alert(value);
@@ -30,29 +31,9 @@ export default function Room({ params }: { params: { roomId: string } }) {
     return () => { console.log('cleanup phase 1'); };
   }, [params.roomId]);
 
-  useEffect(() => {
-    var conn = new WebSocket("ws://localhost:8080/ws");
-    conn.onclose = function (evt) {
-      console.log(evt);
-      console.log("ws closed");
-    };
-
-    conn.onopen = function (evt) {
-      console.log("ws connected");
-    };
-
-    conn.onmessage = function (evt) {
-      var messages = evt.data.split("\n");
-      for (var i = 0; i < messages.length; i++) {
-        console.log(messages[i]);
-      }
-    };
-
-    return function () {
-      console.log("cleanup connections.");
-      conn.close();
-    };
-  }, [params.roomId]);
+  useWebSocket({ roomId: params.roomId, onMessage: function(m: any) {
+    console.log(m);
+  } });
 
   function saveUserName(name: string) {
     const user = { id: "", name };
