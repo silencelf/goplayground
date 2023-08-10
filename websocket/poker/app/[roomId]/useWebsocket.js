@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 
 export default function useWebSocket({ roomId, onMessage }) {
+    var conn;
     useEffect(() => {
-        var conn = new WebSocket("ws://localhost:8080/ws");
+        conn = new WebSocket(`ws://localhost:8080/rooms/${roomId}`);
 
         console.log('init room: ' + roomId);
         conn.onclose = function (evt) {
@@ -15,11 +16,7 @@ export default function useWebSocket({ roomId, onMessage }) {
         };
     
         conn.onmessage = function (evt) {
-          var messages = evt.data.split("\n");
-          for (var i = 0; i < messages.length; i++) {
-            console.log(messages[i]);
-          }
-          onMessage(messages);
+          onMessage(evt.data);
         };
     
         return function () {
@@ -27,4 +24,12 @@ export default function useWebSocket({ roomId, onMessage }) {
           conn.close();
         };
     }, [roomId, onMessage]);
+
+    return {
+      name: roomId,
+      send: function(m) {
+        if (!conn) return;
+        conn.send(m);
+      }
+    }
 }

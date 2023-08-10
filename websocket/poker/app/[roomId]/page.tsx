@@ -5,10 +5,6 @@ import UserName from "../components/UserName";
 import Button from "../components/Button";
 import useWebSocket from "./useWebsocket";
 
-function handleSizeClick(value: string | number) {
-  alert(value);
-}
-
 type action = {
   roomId: string;
   userId: string;
@@ -28,12 +24,21 @@ export default function Room({ params }: { params: { roomId: string } }) {
         console.log(e);
       }
     }
-    return () => { console.log('cleanup phase 1'); };
+    return () => {
+      console.log("cleanup phase 1");
+    };
   }, [params.roomId]);
 
-  useWebSocket({ roomId: params.roomId, onMessage: function(m: any) {
-    console.log(m);
-  } });
+  const room = useWebSocket({
+    roomId: params.roomId,
+    onMessage: function (m: any) {
+      console.log(m);
+    },
+  });
+
+  function handleSizeClick(value: string | number) {
+    room.send(`VOTE ${value}`);
+  }
 
   function saveUserName(name: string) {
     const user = { id: "", name };
@@ -58,16 +63,19 @@ export default function Room({ params }: { params: { roomId: string } }) {
     ["?", "?"],
   ];
 
-  const estimations = [];
-  for (let i = 0; i < 20; i++) {
+  const estimates = [];
+  for (let i = 0; i < 2; i++) {
     const shape = "♤♧♡♢"[i % 4];
-    estimations.push({ name: "name" + i, vote: i, shape: shape });
+    estimates.push({ name: "name" + i, vote: i, shape: shape });
   }
 
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
       {user.name && (
-        <UserName userName={user?.name} onConfirmClick={saveUserName}></UserName>
+        <UserName
+          userName={user?.name}
+          onConfirmClick={saveUserName}
+        ></UserName>
       )}
 
       {/* <div className="w-full py-2 text-left">{params.roomId}</div> */}
@@ -99,7 +107,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
 
       <div id="pokers-container" className="w-full lg:mt-5 mb-32 lg:mb-0">
         <ul className="flex flex-wrap justify-center">
-          {estimations.map(({ name, vote, shape }) => (
+          {estimates.map(({ name, vote, shape }) => (
             <li key={name} className="px-16 py-2">
               <div className="bg-gradient-to-br from-cyan-300 to-blue-300  w-24 h-36 rounded-lg text-center inline-block shadow-md text-poker hover:border">
                 <span>{shape}</span>

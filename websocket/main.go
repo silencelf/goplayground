@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"path"
@@ -17,10 +16,10 @@ var addr = flag.String("addr", ":8080", "http service address")
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
+	// if r.URL.Path != "/" {
+	// 	http.Error(w, "Not found", http.StatusNotFound)
+	// 	return
+	// }
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -37,6 +36,7 @@ func main() {
 		hubName := path.Base(r.URL.Path)
 		hub, exists := hubs[hubName]
 		if !exists {
+			log.Println("Creating room:" + hubName)
 			hub = newHub(hubName, terminate)
 			go hub.run()
 			hubs[hubName] = hub
@@ -53,7 +53,7 @@ func cleanEmptyHub() {
 	for {
 		select {
 		case hub := <-terminate:
-			fmt.Println("Deleting hub:", hub.name)
+			log.Println("Deleting hub:", hub.name)
 			delete(hubs, hub.name)
 		}
 	}
