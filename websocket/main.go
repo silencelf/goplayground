@@ -2,8 +2,15 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"path"
+)
+
+var (
+	hubs      map[string]*Hub = make(map[string]*Hub)
+	terminate chan *Hub       = make(chan *Hub)
 )
 
 var addr = flag.String("addr", ":8080", "http service address")
@@ -23,14 +30,31 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	flag.Parse()
-	hub := newHub()
-	go hub.run()
+	go cleanEmptyHub()
+
 	http.HandleFunc("/", serveHome)
-	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/rooms/", func(w http.ResponseWriter, r *http.Request) {
+		hubName := path.Base(r.URL.Path)
+		hub, exists := hubs[hubName]
+		if !exists {
+			hub = newHub(hubName, terminate)
+			go hub.run()
+			hubs[hubName] = hub
+		}
 		serveWs(hub, w, r)
 	})
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
+	}
+}
+
+func cleanEmptyHub() {
+	for {
+		select {
+		case hub := <-terminate:
+			fmt.Println("Deleting hub:", hub.name)
+			delete(hubs, hub.name)
+		}
 	}
 }
