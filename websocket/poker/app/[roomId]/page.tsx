@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import UserName from "../components/UserName";
 import Button from "../components/Button";
 import useWebSocket from "./useWebsocket";
@@ -29,11 +29,13 @@ export default function Room({ params }: { params: { roomId: string } }) {
     };
   }, [params.roomId]);
 
+  const onMessage = useCallback(function (m: any) {
+    console.log(m);
+  }, [])
+
   const room = useWebSocket({
     roomId: params.roomId,
-    onMessage: function (m: any) {
-      console.log(m);
-    },
+    onMessage: onMessage
   });
 
   function handleSizeClick(value: string | number) {
@@ -46,6 +48,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
     try {
       const tempUser = JSON.stringify(user);
       localStorage["poker_user"] = tempUser;
+      room.send(`NAME ${name}`);
     } catch (e) {
       console.log(e);
     }
@@ -71,7 +74,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
 
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
-      {user.name && (
+      {(
         <UserName
           userName={user?.name}
           onConfirmClick={saveUserName}

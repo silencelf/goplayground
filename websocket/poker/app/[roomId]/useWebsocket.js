@@ -3,6 +3,7 @@ import { useEffect } from "react";
 export default function useWebSocket({ roomId, onMessage }) {
     var conn;
     useEffect(() => {
+        console.log('running effect, which creates a ws connection');
         conn = new WebSocket(`ws://localhost:8080/rooms/${roomId}`);
 
         console.log('init room: ' + roomId);
@@ -28,7 +29,10 @@ export default function useWebSocket({ roomId, onMessage }) {
     return {
       name: roomId,
       send: function(m) {
-        if (!conn) return;
+        if (!conn) {
+          console.log('conn is null');
+          return;
+        }
         conn.send(m);
       }
     }
