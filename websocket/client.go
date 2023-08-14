@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -14,7 +15,7 @@ const (
 	writeWait = 10 * time.Second
 
 	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
+	pongWait = 600 * time.Second
 
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
@@ -38,14 +39,15 @@ var upgrader = websocket.Upgrader{
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	name string
+	nick string
 	hub  *Hub
 
 	// The websocket connection.
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send chan []byte
+	send     chan []byte
+	commands chan<- command
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -55,7 +57,10 @@ type Client struct {
 // reads from this goroutine.
 func (c *Client) readPump() {
 	defer func() {
-		c.hub.unregister <- c
+		c.commands <- command{
+			id:     CMD_QUIT,
+			client: c,
+		}
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
@@ -70,8 +75,28 @@ func (c *Client) readPump() {
 			break
 		}
 		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		log.Println("message: ", string(message))
-		c.hub.broadcast <- message
+
+		// Handle rename command
+		str := strings.Trim(string(message), "\r\n")
+		args := strings.Split(str, " ")
+		cmd := args[0]
+
+		switch cmd {
+		case "/nick":
+			c.commands <- command{
+				id:     CMD_NICK,
+				client: c,
+				args:   args,
+			}
+		case "/vote":
+			c.commands <- command{
+				id:     CMD_VOTE,
+				client: c,
+				args:   args,
+			}
+		default:
+			log.Println("Client unknown commmand", str)
+		}
 	}
 }
 
@@ -128,8 +153,11 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
-	client.hub.register <- client
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), commands: hub.commands}
+	client.commands <- command{
+		id:     CMD_JOIN,
+		client: client,
+	}
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.

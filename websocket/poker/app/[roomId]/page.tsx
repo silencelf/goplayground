@@ -39,7 +39,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
   });
 
   function handleSizeClick(value: string | number) {
-    room.send(`VOTE ${value}`);
+    room.send(`/vote ${value}`);
   }
 
   function saveUserName(name: string) {
@@ -48,7 +48,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
     try {
       const tempUser = JSON.stringify(user);
       localStorage["poker_user"] = tempUser;
-      room.send(`NAME ${name}`);
+      room.send(`/nick ${name}`);
     } catch (e) {
       console.log(e);
     }
