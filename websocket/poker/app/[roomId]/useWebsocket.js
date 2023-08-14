@@ -1,18 +1,21 @@
-import { useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 export default function useWebSocket({ roomId, onMessage }) {
-    var conn;
+    var [conn, setConn] = useState(null);
+
     useEffect(() => {
         console.log('running effect, which creates a ws connection');
         conn = new WebSocket(`ws://localhost:8080/rooms/${roomId}`);
 
         console.log('init room: ' + roomId);
         conn.onclose = function (evt) {
+          setConn(null);
           console.log(evt);
           console.log("ws closed");
         };
     
         conn.onopen = function (evt) {
+          setConn(conn);
           console.log("ws connected");
         };
     
@@ -21,21 +24,14 @@ export default function useWebSocket({ roomId, onMessage }) {
         };
     
         return function () {
-          console.log("cleanup connections.");
           conn.close();
+          console.log("cleanup connections.");
         };
-    }, [roomId, onMessage]);
-
-    console.log(conn);
-    const getConnection = useCallback(() => {
-      console.log('cached conn:' + conn)
-      return conn;
     }, [roomId, onMessage]);
 
     return {
       name: roomId,
       send: function(m) {
-        const conn = getConnection();
         if (!conn) {
           console.log('conn is null');
           return;
