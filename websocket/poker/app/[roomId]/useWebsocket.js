@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 export default function useWebSocket({ roomId, onMessage }) {
     var conn;
@@ -26,9 +26,16 @@ export default function useWebSocket({ roomId, onMessage }) {
         };
     }, [roomId, onMessage]);
 
+    console.log(conn);
+    const getConnection = useCallback(() => {
+      console.log('cached conn:' + conn)
+      return conn;
+    }, [roomId, onMessage]);
+
     return {
       name: roomId,
       send: function(m) {
+        const conn = getConnection();
         if (!conn) {
           console.log('conn is null');
           return;
