@@ -54,6 +54,7 @@ func cleanEmptyHub() {
 		select {
 		case hub := <-terminate:
 			log.Println("Deleting hub:", hub.name)
+			log.Printf("Total %d clients after %d seconds.", len(hub.clients), 10)
 			delete(hubs, hub.name)
 		}
 	}

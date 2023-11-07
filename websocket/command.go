@@ -9,6 +9,7 @@ const (
 	CMD_SHOW
 	CMD_CLEAR
 	CMD_QUIT
+	CMD_TERM
 )
 
 type command struct {

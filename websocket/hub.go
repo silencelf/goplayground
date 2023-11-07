@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"strings"
+	"time"
 )
 
 type Hub struct {
@@ -31,6 +33,7 @@ func (h *Hub) run() {
 	for cmd := range h.commands {
 		switch cmd.id {
 		case CMD_JOIN:
+			fmt.Println("join the room:", cmd.client)
 			h.clients[cmd.client] = true
 		case CMD_QUIT:
 			if _, ok := h.clients[cmd.client]; ok {
@@ -46,13 +49,23 @@ func (h *Hub) run() {
 			log.Printf("renaming client: %s -> %s\n", cmd.client.nick, cmd.args[1])
 			cmd.client.nick = cmd.args[1]
 			h.broadcast(strings.Join(cmd.args, " "), cmd.client)
+		case CMD_TERM:
+			break
 		default:
 			log.Println("Hub unhandled command:", cmd)
 		}
 
 		if len(h.clients) == 0 {
-			terminate <- h
-			break
+			go func() {
+				timer := time.NewTimer(time.Second * 10)
+				log.Printf("waiting for %d seconds.\n", 10)
+				<-timer.C
+				log.Printf("Total %d clients after %d seconds.", len(h.clients), 10)
+				if len(h.clients) == 0 {
+					h.commands <- command{id: CMD_TERM}
+					terminate <- h
+				}
+			}()
 		}
 	}
 }
