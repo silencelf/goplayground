@@ -94,6 +94,12 @@ func (c *Client) readPump() {
 				client: c,
 				args:   args,
 			}
+		case "/list":
+			c.commands <- command{
+				id:     CMD_List,
+				client: c,
+				args:   args,
+			}
 		default:
 			log.Println("Client unknown commmand", str)
 		}

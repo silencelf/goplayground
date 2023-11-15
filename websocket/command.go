@@ -4,6 +4,7 @@ type commandID int
 
 const (
 	CMD_NICK commandID = iota
+	CMD_List
 	CMD_JOIN
 	CMD_VOTE
 	CMD_SHOW

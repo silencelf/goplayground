@@ -42,6 +42,10 @@ export default function Room({ params }: { params: { roomId: string } }) {
     room.send(`/vote ${value}`);
   }
 
+  function handleListClick() {
+    room.send(`/list`);
+  }
+
   function saveUserName(name: string) {
     const user = { id: "", name };
     setUser(user);
@@ -100,7 +104,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
         </ul>
         <ul className="flex justify-end my-5 lg:my-0">
           <li className="px-5">
-            <Button onClick={() => alert(1)}>Show</Button>
+            <Button onClick={() => handleListClick()}>Show</Button>
           </li>
           <li>
             <Button>Clear</Button>
