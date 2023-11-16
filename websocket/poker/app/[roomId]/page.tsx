@@ -37,6 +37,19 @@ export default function Room({ params }: { params: { roomId: string } }) {
     console.log(payload)
     // if the response is a room, set the hub state
     if (payload.type === 'room') {
+      // sort the clients by id to make sure the order is consistant
+      payload.value.clients.sort((a: any, b: any) => {
+        return a.id.localeCompare(b.id);
+      });
+      // assign a shape to each client and then assign to hub
+      // using for loop, use the index to assign a shape
+      for (let i = 0; i < payload.value.clients.length; i ++) {
+        const shape = '♤♧♡♢'[i % 4];
+        payload.value.clients[i].shape = shape;
+      }
+
+      console.log(payload.value.clients)
+
       setHub(payload.value);
     }
   }, [])
@@ -78,12 +91,6 @@ export default function Room({ params }: { params: { roomId: string } }) {
     ["?", "?"],
   ];
 
-  const estimates = [];
-  for (let i = 0; i < 2; i++) {
-    const shape = "♤♧♡♢"[i % 4];
-    estimates.push({ name: "name" + i, vote: i, shape: shape });
-  }
-
   function showVotes(): void {
     // send websocket requset to set the hub as unveiled
     // And then fetch and display all the votes
@@ -121,19 +128,19 @@ export default function Room({ params }: { params: { roomId: string } }) {
             <Button onClick={() => showVotes()}>Show</Button>
           </li>
           <li>
-            <Button>Clear</Button>
+            <Button onClick={() => handleClearClick()}>Clear</Button>
           </li>
         </ul>
       </div>
 
       <div id="pokers-container" className="w-full lg:mt-5 mb-32 lg:mb-0">
         <ul className="flex flex-wrap justify-center">
-          {hub.clients.map(({ id, nick, vote }) => (
+          {hub.clients.map(({ id, nick, vote, shape }) => (
             <li key={id} className="px-16 py-2">
               <div className="bg-gradient-to-br from-cyan-300 to-blue-300  w-24 h-36 rounded-lg text-center inline-block shadow-md text-poker hover:border">
                 {
                   // display the vote in bold if the hub is unveiled, otherwise display the shape
-                  hub.isUnveiled && vote.hasValue ? <span>{vote.v}</span> : <span>{'*'}</span>
+                  hub.isUnveiled && vote.hasValue ? <span>{vote.v}</span> : <span>{shape}</span>
                 }
               </div>
               <div className="text-center">{nick}</div>

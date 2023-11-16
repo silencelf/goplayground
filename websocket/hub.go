@@ -41,6 +41,12 @@ func (h *Hub) run() {
 		case CMD_List:
 		case CMD_UNVEIL:
 			h.IsUnveiled = true
+		case CMD_CLEAR:
+			// veil the room and reset votes
+			h.IsUnveiled = false
+			for k := range h.Clients {
+				h.Clients[k] = Vote{HasValue: false}
+			}
 		case CMD_QUIT:
 			if _, ok := h.Clients[cmd.client]; ok {
 				log.Println("unresiger: removing client...", cmd.client.nick)
