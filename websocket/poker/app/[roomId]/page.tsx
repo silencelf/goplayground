@@ -13,24 +13,32 @@ type action = {
 };
 
 export default function Room({ params }: { params: { roomId: string } }) {
-  const [user, setUser] = useState({ id: "", name: "" });
+  const [user, setUser] = useState({ id: '', name: '' });
+  // define hub as state for displaying the votes
+  const [hub, setHub] = useState({ isUnveiled: false, clients: [] });
 
   useEffect(() => {
-    console.log("loading user...");
+    console.log('loading user...');
     if (localStorage["poker_user"]) {
       try {
-        setUser(JSON.parse(localStorage["poker_user"]));
+        //setUser(JSON.parse(localStorage["poker_user"]));
       } catch (e) {
         console.log(e);
       }
     }
     return () => {
-      console.log("cleanup phase 1");
+      console.log('cleanup phase 1');
     };
   }, [params.roomId]);
 
-  const onMessage = useCallback(function (m: any) {
-    console.log(m);
+  const onMessage = useCallback(function (m: string) {
+    // deserialize the payload
+    const payload = JSON.parse(m);
+    console.log(payload)
+    // if the response is a room, set the hub state
+    if (payload.type === 'room') {
+      setHub(payload.value);
+    }
   }, [])
 
   const room = useWebSocket({
@@ -41,9 +49,9 @@ export default function Room({ params }: { params: { roomId: string } }) {
   function handleSizeClick(value: string | number) {
     room.send(`/vote ${value}`);
   }
-
-  function handleListClick() {
-    room.send(`/list`);
+  
+  function handleClearClick() {
+    room.send('/clear');
   }
 
   function saveUserName(name: string) {
@@ -76,13 +84,19 @@ export default function Room({ params }: { params: { roomId: string } }) {
     estimates.push({ name: "name" + i, vote: i, shape: shape });
   }
 
+  function showVotes(): void {
+    // send websocket requset to set the hub as unveiled
+    // And then fetch and display all the votes
+    room.send('/unveil');
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
       {(
         <UserName
           userName={user?.name}
           onConfirmClick={saveUserName}
-        ></UserName>
+        />
       )}
 
       {/* <div className="w-full py-2 text-left">{params.roomId}</div> */}
@@ -104,7 +118,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
         </ul>
         <ul className="flex justify-end my-5 lg:my-0">
           <li className="px-5">
-            <Button onClick={() => handleListClick()}>Show</Button>
+            <Button onClick={() => showVotes()}>Show</Button>
           </li>
           <li>
             <Button>Clear</Button>
@@ -114,12 +128,15 @@ export default function Room({ params }: { params: { roomId: string } }) {
 
       <div id="pokers-container" className="w-full lg:mt-5 mb-32 lg:mb-0">
         <ul className="flex flex-wrap justify-center">
-          {estimates.map(({ name, vote, shape }) => (
-            <li key={name} className="px-16 py-2">
+          {hub.clients.map(({ id, nick, vote }) => (
+            <li key={id} className="px-16 py-2">
               <div className="bg-gradient-to-br from-cyan-300 to-blue-300  w-24 h-36 rounded-lg text-center inline-block shadow-md text-poker hover:border">
-                <span>{shape}</span>
+                {
+                  // display the vote in bold if the hub is unveiled, otherwise display the shape
+                  hub.isUnveiled && vote.hasValue ? <span>{vote.v}</span> : <span>{'*'}</span>
+                }
               </div>
-              <div className="text-center">{name}</div>
+              <div className="text-center">{nick}</div>
             </li>
           ))}
         </ul>

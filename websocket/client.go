@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -39,6 +40,7 @@ var upgrader = websocket.Upgrader{
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
+	id   string
 	nick string
 	hub  *Hub
 
@@ -97,6 +99,24 @@ func (c *Client) readPump() {
 		case "/list":
 			c.commands <- command{
 				id:     CMD_List,
+				client: c,
+				args:   args,
+			}
+		case "/unveil":
+			c.commands <- command{
+				id:     CMD_UNVEIL,
+				client: c,
+				args:   args,
+			}
+		case "/clear":
+			c.commands <- command{
+				id:     CMD_CLEAR,
+				client: c,
+				args:   args,
+			}
+		case "/quit":
+			c.commands <- command{
+				id:     CMD_QUIT,
 				client: c,
 				args:   args,
 			}
@@ -159,7 +179,13 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), commands: hub.commands}
+	// genereate guid id for client
+	id, error := uuid.NewV4()
+	if error != nil {
+		log.Println(error)
+		return
+	}
+	client := &Client{id: id.String(), hub: hub, conn: conn, send: make(chan []byte, 256), commands: hub.commands}
 	client.commands <- command{
 		id:     CMD_JOIN,
 		client: client,

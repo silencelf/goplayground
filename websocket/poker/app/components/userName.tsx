@@ -6,10 +6,7 @@ type UserNameProps = {
 };
 
 export default function UserName({ userName, onConfirmClick }: UserNameProps) {
-  const [name, setName] = useState(() => {
-    console.log('initializing user name...');
-    return userName;
-  })
+  const [name, setName] = useState(userName);
 
   return (
     <div className="px-3 py-2">
@@ -20,7 +17,7 @@ export default function UserName({ userName, onConfirmClick }: UserNameProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <button onClick={() => onConfirmClick(name)}>Confirm</button>
+        <button className="ml-2" onClick={() => onConfirmClick(name)}>Confirm</button>
       </p>
     </div>
   );
