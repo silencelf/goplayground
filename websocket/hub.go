@@ -41,6 +41,32 @@ func (h *Hub) run() {
 		case CMD_List:
 		case CMD_UNVEIL:
 			h.IsUnveiled = true
+		case CMD_MERGE:
+			// merge the client with another client
+			// the second parameter is the client GUID
+			// First, find the client using the GUID
+			// Then, merge the two clients
+			// Finally, remove orignal client as the connection is already broken
+			if len(cmd.args) < 2 {
+				log.Println("invalid merge command:", cmd.args)
+				continue
+			}
+			// find the client
+			var client *Client
+			for k := range h.Clients {
+				if k.id == cmd.args[1] {
+					client = k
+					break
+				}
+			}
+			if client == nil {
+				log.Println("merge: client not found:", cmd.args[1])
+				continue
+			}
+			// copy the votes from the client to the current client
+			h.Clients[cmd.client] = h.Clients[client]
+			// delete the client we found as it's already broken
+			delete(h.Clients, client)
 		case CMD_CLEAR:
 			// veil the room and reset votes
 			h.IsUnveiled = false

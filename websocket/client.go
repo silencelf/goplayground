@@ -120,6 +120,12 @@ func (c *Client) readPump() {
 				client: c,
 				args:   args,
 			}
+		case "/merge":
+			c.commands <- command{
+				id:     CMD_MERGE,
+				client: c,
+				args:   args,
+			}
 		default:
 			log.Println("Client unknown commmand", str)
 		}
