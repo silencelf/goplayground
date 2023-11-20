@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import UserName from "../components/UserName";
 import Button from "../components/Button";
 import useWebSocket from "./useWebsocket";
@@ -16,12 +16,13 @@ export default function Room({ params }: { params: { roomId: string } }) {
   const [user, setUser] = useState({ id: '', name: '' });
   // define hub as state for displaying the votes
   const [hub, setHub] = useState({ isUnveiled: false, clients: [] });
+  const [clientId, setClientId] = useState('');
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     console.log('loading user...');
     if (localStorage["poker_user"]) {
       try {
-        //setUser(JSON.parse(localStorage["poker_user"]));
+        setUser(JSON.parse(localStorage["poker_user"]));
       } catch (e) {
         console.log(e);
       }
@@ -32,31 +33,41 @@ export default function Room({ params }: { params: { roomId: string } }) {
   }, [params.roomId]);
 
   const onMessage = useCallback(function (m: string) {
-    // deserialize the payload
-    const payload = JSON.parse(m);
-    console.log(payload)
-    // if the response is a room, set the hub state
-    if (payload.type === 'room') {
-      // sort the clients by id to make sure the order is consistant
-      payload.value.clients.sort((a: any, b: any) => {
-        return a.id.localeCompare(b.id);
-      });
-      // assign a shape to each client and then assign to hub
-      // using for loop, use the index to assign a shape
-      for (let i = 0; i < payload.value.clients.length; i ++) {
-        const shape = '♤♧♡♢'[i % 4];
-        payload.value.clients[i].shape = shape;
+    // split the message by '\n' and then filter out the empty string
+    // foreach splitted message and handle them
+    m.split('\n').filter((m) => m).forEach((m) => {
+      // deserialize the payload
+      const payload = JSON.parse(m);
+      console.log(payload)
+      // if the response is a room, set the hub state
+      if (payload.type === 'room') {
+        // sort the clients by id to make sure the order is consistant
+        payload.value.clients.sort((a: any, b: any) => {
+          return a.id.localeCompare(b.id);
+        });
+        // assign a shape to each client and then assign to hub
+        // using for loop, use the index to assign a shape
+        for (let i = 0; i < payload.value.clients.length; i ++) {
+          const shape = '♤♧♡♢'[i % 4];
+          payload.value.clients[i].shape = shape;
+        }
+
+        setHub(payload.value);
       }
 
-      console.log(payload.value.clients)
+      if (payload.type === 'id') {
+        setClientId(payload.value);
+      }
+    });
 
-      setHub(payload.value);
-    }
   }, [])
 
   const room = useWebSocket({
     roomId: params.roomId,
-    onMessage: onMessage
+    onMessage: onMessage,
+    onConnected: () =>  {
+      console.log('ws connected.....');
+    }
   });
 
   function handleSizeClick(value: string | number) {
@@ -67,9 +78,8 @@ export default function Room({ params }: { params: { roomId: string } }) {
     room.send('/clear');
   }
 
-  function saveUserName(name: string) {
-    const user = { id: "", name };
-    setUser(user);
+  function saveUser({ id, name }: any){
+    user.name = name;
     try {
       const tempUser = JSON.stringify(user);
       localStorage["poker_user"] = tempUser;
@@ -77,6 +87,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
     } catch (e) {
       console.log(e);
     }
+    setUser(user);
   }
 
   const points = [
@@ -99,12 +110,10 @@ export default function Room({ params }: { params: { roomId: string } }) {
 
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
-      {(
-        <UserName
-          userName={user?.name}
-          onConfirmClick={saveUserName}
-        />
-      )}
+      <UserName
+        userName={user?.name}
+        onConfirmClick={(name) => saveUser({ name })}
+      />
 
       {/* <div className="w-full py-2 text-left">{params.roomId}</div> */}
       <div

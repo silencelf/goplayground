@@ -8,6 +8,9 @@ type UserNameProps = {
 export default function UserName({ userName, onConfirmClick }: UserNameProps) {
   const [name, setName] = useState(userName);
 
+  console.log('rerendering' + userName);
+  console.log('rerendering but name is ' + name);
+
   return (
     <div className="px-3 py-2">
       Please enter your name:

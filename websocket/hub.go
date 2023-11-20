@@ -38,6 +38,9 @@ func (h *Hub) run() {
 		case CMD_JOIN:
 			fmt.Println("join the room:", cmd.client)
 			h.Clients[cmd.client] = Vote{HasValue: false}
+			// send the client id to the client
+			cmd.client.send <- []byte(fmt.Sprintf(`{"type": "id", "value": "%s"}`, cmd.client.id))
+			break
 		case CMD_List:
 		case CMD_UNVEIL:
 			h.IsUnveiled = true
