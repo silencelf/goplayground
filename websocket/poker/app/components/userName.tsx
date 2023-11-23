@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type UserNameProps = {
   onConfirmClick: (name: string) => void;
@@ -7,9 +7,6 @@ type UserNameProps = {
 
 export default function UserName({ userName, onConfirmClick }: UserNameProps) {
   const [name, setName] = useState(userName);
-
-  console.log('rerendering' + userName);
-  console.log('rerendering but name is ' + name);
 
   return (
     <div className="px-3 py-2">

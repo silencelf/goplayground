@@ -14,23 +14,31 @@ type action = {
 
 export default function Room({ params }: { params: { roomId: string } }) {
   const [user, setUser] = useState({ id: '', name: '' });
+  const [userLoaded, setUserLoaded] = useState(false);
+
   // define hub as state for displaying the votes
   const [hub, setHub] = useState({ isUnveiled: false, clients: [] });
   const [clientId, setClientId] = useState('');
 
-  useLayoutEffect(() => {
-    console.log('loading user...');
-    if (localStorage["poker_user"]) {
-      try {
-        setUser(JSON.parse(localStorage["poker_user"]));
-      } catch (e) {
-        console.log(e);
+  useEffect(() => {
+    if (!userLoaded) {
+      console.log('loading user...');
+      if (localStorage["poker_user"]) {
+        try {
+          const user = JSON.parse(localStorage["poker_user"])
+          setUser(user);
+          setUserLoaded(true);
+        } catch (e) {
+          console.log(e);
+        }
       }
     }
     return () => {
+      setUserLoaded(false);
       console.log('cleanup phase 1');
     };
-  }, [params.roomId]);
+  }, []);
+
 
   const onMessage = useCallback(function (m: string) {
     // split the message by '\n' and then filter out the empty string
@@ -110,12 +118,16 @@ export default function Room({ params }: { params: { roomId: string } }) {
 
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
-      <UserName
-        userName={user?.name}
-        onConfirmClick={(name) => saveUser({ name })}
-      />
+      {userLoaded && (
+        <UserName
+          userName={user?.name}
+          onConfirmClick={(name) => saveUser({ name })}
+        />
+      )}
 
-      {/* <div className="w-full py-2 text-left">{params.roomId}</div> */}
+      <div className="w-full py-2 text-left">
+        <label htmlFor="clientId">Client Id:</label>
+        <span className="ml-2" id="clientId">{clientId}</span></div>
       <div
         id="actions"
         className="grid w-full min-w-fit lg:grid-cols-[2fr,1fr] lg:text-left lg:mb-4"
@@ -149,7 +161,11 @@ export default function Room({ params }: { params: { roomId: string } }) {
               <div className="bg-gradient-to-br from-cyan-300 to-blue-300  w-24 h-36 rounded-lg text-center inline-block shadow-md text-poker hover:border">
                 {
                   // display the vote in bold if the hub is unveiled, otherwise display the shape
-                  hub.isUnveiled && vote.hasValue ? <span>{vote.v}</span> : <span>{shape}</span>
+                  hub.isUnveiled && vote.hasValue ? (
+                    <span>{vote.v}</span>
+                  ) : (
+                    <span>{shape}</span>
+                  )
                 }
               </div>
               <div className="text-center">{nick}</div>
