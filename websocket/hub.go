@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+const (
+	heartbeatTimeout = 20 * time.Second
+)
+
 type Hub struct {
 	Name       string
 	Clients    map[*Client]Vote
@@ -108,6 +112,9 @@ func (h *Hub) run() {
 			log.Println("Hub unhandled command:", cmd)
 		}
 
+		// set last activity time
+		cmd.client.lastActivity = time.Now()
+
 		// broadcast the room to all clients
 		roomInfo, _ := json.Marshal(Response{Type: "room", Value: h.buildRoom()})
 		h.broadcast(string(roomInfo))
@@ -124,6 +131,18 @@ func (h *Hub) run() {
 				}
 			}()
 		}
+	}
+}
+
+func (h *Hub) checkHeartbeat() {
+	for {
+		for k := range h.Clients {
+			if time.Now().Sub(k.lastActivity) > heartbeatTimeout {
+				log.Println("Client heartbeat timeout:", k.nick)
+				h.commands <- command{id: CMD_QUIT, client: k}
+			}
+		}
+		time.Sleep(time.Second * 5)
 	}
 }
 

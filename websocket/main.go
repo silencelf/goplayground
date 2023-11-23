@@ -39,6 +39,7 @@ func main() {
 			log.Println("Creating room:" + hubName)
 			hub = newHub(hubName, terminate)
 			go hub.run()
+			go hub.checkHeartbeat()
 			hubs[hubName] = hub
 		}
 		serveWs(hub, w, r)
