@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import UserName from "../components/UserName";
 import Button from "../components/Button";
 import useWebSocket from "./useWebsocket";
@@ -11,6 +11,11 @@ type action = {
   type: string;
   payload: object;
 };
+
+interface Vote {
+  hasValue: boolean;
+  v: any
+}
 
 export default function Room({ params }: { params: { roomId: string } }) {
   const [user, setUser] = useState({ id: '', name: '' });
@@ -28,6 +33,8 @@ export default function Room({ params }: { params: { roomId: string } }) {
           const user = JSON.parse(localStorage["poker_user"])
           setUser(user);
           setUserLoaded(true);
+          room.send(`/nick ${user.name}`);
+          room.send(`/list ${user.name}`);
         } catch (e) {
           console.log(e);
         }
@@ -35,7 +42,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
     }
     return () => {
       setUserLoaded(false);
-      console.log('cleanup phase 1');
+      console.log('cleanup user loading...');
     };
   }, []);
 
@@ -156,7 +163,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
 
       <div id="pokers-container" className="w-full lg:mt-5 mb-32 lg:mb-0">
         <ul className="flex flex-wrap justify-center">
-          {hub.clients.map(({ id, nick, vote, shape }) => (
+          {hub.clients.map(({ id, nick, vote, shape }: { id: string, nick: string, vote: Vote, shape: string }) => (
             <li key={id} className="px-16 py-2">
               <div className="bg-gradient-to-br from-cyan-300 to-blue-300  w-24 h-36 rounded-lg text-center inline-block shadow-md text-poker hover:border">
                 {
