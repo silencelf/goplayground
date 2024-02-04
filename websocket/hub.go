@@ -122,7 +122,7 @@ func (h *Hub) run() {
 		if len(h.Clients) == 0 {
 			go func() {
 				timer := time.NewTimer(time.Second * 600)
-				log.Printf("waiting for %d seconds.\n", 10)
+				log.Printf("waiting for %d seconds.\n", 600)
 				<-timer.C
 				log.Printf("Total %d clients after %d seconds.", len(h.Clients), 600)
 				if len(h.Clients) == 0 {
