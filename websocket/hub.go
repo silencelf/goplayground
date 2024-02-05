@@ -94,6 +94,7 @@ func (h *Hub) run() {
 			log.Printf("renaming client: %s -> %s\n", cmd.client.nick, cmd.args[1])
 			cmd.client.nick = cmd.args[1]
 		case CMD_TERM:
+			log.Print("exiting the run loop")
 			break
 		case CMD_VOTE:
 			log.Println(cmd.args)
@@ -113,7 +114,9 @@ func (h *Hub) run() {
 		}
 
 		// set last activity time
-		cmd.client.lastActivity = time.Now()
+		if cmd.client != nil {
+			cmd.client.lastActivity = time.Now()
+		}
 
 		// broadcast the room to all clients
 		roomInfo, _ := json.Marshal(Response{Type: "room", Value: h.buildRoom()})
@@ -121,12 +124,15 @@ func (h *Hub) run() {
 
 		if len(h.Clients) == 0 {
 			go func() {
-				timer := time.NewTimer(time.Second * 600)
-				log.Printf("waiting for %d seconds.\n", 600)
+				timeOut := 20
+				timer := time.NewTimer(time.Second * time.Duration(timeOut))
+				log.Printf("waiting for %d seconds.\n", timeOut)
 				<-timer.C
-				log.Printf("Total %d clients after %d seconds.", len(h.Clients), 600)
+				log.Printf("Total %d clients after %d seconds.", len(h.Clients), timeOut)
 				if len(h.Clients) == 0 {
+					log.Print("terminating...")
 					h.commands <- command{id: CMD_TERM}
+					log.Print("sending terminate signal...")
 					terminate <- h
 				}
 			}()
