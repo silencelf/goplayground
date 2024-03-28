@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 )
 
@@ -100,12 +99,8 @@ func (h *Hub) run() {
 				log.Println("invalid rename command:", cmd.args)
 				continue
 			}
-			//cmd.client.hub.broadcast()
-			vote, err := strconv.Atoi(cmd.args[1])
-			if err != nil {
-				fmt.Println("Invalid vote:", cmd.args[1])
-			}
-			h.Clients[cmd.client] = Vote{HasValue: true, V: vote}
+			// TODO: validate the input
+			h.Clients[cmd.client] = Vote{HasValue: true, V: cmd.args[1]}
 		default:
 			log.Println("Hub unhandled command:", cmd)
 		}
@@ -173,8 +168,8 @@ type Response struct {
 }
 
 type Vote struct {
-	HasValue bool `json:"hasValue"`
-	V        int  `json:"v"`
+	HasValue bool   `json:"hasValue"`
+	V        string `json:"v"`
 }
 
 type Room struct {
