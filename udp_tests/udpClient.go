@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func main() {
+func RunClient() {
 	serverAddr := "localhost:8008"
 	udpAddr, _ := net.ResolveUDPAddr("udp", serverAddr)
 
