@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import UserName from "../components/UserName";
-import Button from "../components/Button";
+import UserName from "../components/userName";
+import Button from "../components/button";
 import useWebSocket from "./useWebsocket";
 
 type action = {
