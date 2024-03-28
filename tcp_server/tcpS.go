@@ -17,7 +17,7 @@ func handleConnection(c net.Conn) {
 		req, err := http.ReadRequest(reader)
 		if err != nil {
 			fmt.Println(err.Error())
-			break
+            continue
 		}
 
 		fmt.Println(req.URL.Path)

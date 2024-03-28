@@ -1,13 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"net"
+	"os"
 )
 
 func main() {
 	serverAddr := "localhost:8008"
-
 	udpAddr, _ := net.ResolveUDPAddr("udp", serverAddr)
 
 	conn, err := net.DialUDP("udp", nil, udpAddr)
@@ -17,12 +18,30 @@ func main() {
 
 	defer conn.Close()
 
-	message := []byte("Hello, UDP Server!")
+	go func() {
+		for {
+			buffer := make([]byte, 1024)
+			n, addr, err := conn.ReadFromUDP(buffer)
+			if err != nil {
+				fmt.Println(err)
+			}
+			reply := string(buffer[:n])
+			fmt.Printf("reply: %v from %v\n", reply, addr)
+		}
+	}()
 
-	_, err = conn.Write(message)
-	if err != nil {
-		fmt.Println(err)
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("[cmd]$ ")
+		input, _ := reader.ReadString('\n')
+		message := []byte(input)
+
+		_, err := conn.Write(message)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		fmt.Printf("Sent message to %v\n", udpAddr)
+
 	}
-
-	fmt.Printf("Sent message to", udpAddr)
 }

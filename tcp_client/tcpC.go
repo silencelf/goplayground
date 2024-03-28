@@ -1,4 +1,4 @@
-package client
+package main
 
 import (
 	"bufio"
@@ -26,7 +26,7 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Println(">> ")
 		text, _ := reader.ReadString('\n')
-		fmt.Fprintf(c, text+"\n")
+		fmt.Fprintf(c, text + "\n")
 
 		message, _ := bufio.NewReader(c).ReadString('\n')
 		fmt.Println("->: " + message)

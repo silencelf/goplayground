@@ -7,7 +7,6 @@ import (
 
 func main() {
 	serverAddr := "localhost:8008"
-
 	udpAddr, _ := net.ResolveUDPAddr("udp", serverAddr)
 
 	conn, err := net.ListenUDP("udp", udpAddr)
@@ -26,5 +25,9 @@ func main() {
 		}
 
 		fmt.Printf("Received %s from %s\n", buffer[:n], addr)
+
+		if _, err := conn.WriteToUDP([]byte("hi, client!"), addr); err != nil {
+			fmt.Println(err)
+		}
 	}
 }
