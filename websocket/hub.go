@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	heartbeatTimeout = 20 * time.Second
+	heartbeatTimeout = 600 * time.Second
 )
 
 type Hub struct {
@@ -44,7 +44,6 @@ func (h *Hub) run() {
 			h.Clients[cmd.client] = Vote{HasValue: false}
 			// send the client id to the client
 			cmd.client.send <- []byte(fmt.Sprintf(`{"type": "id", "value": "%s"}`, cmd.client.id))
-			break
 		case CMD_List:
 		case CMD_UNVEIL:
 			h.IsUnveiled = true
@@ -95,7 +94,6 @@ func (h *Hub) run() {
 			cmd.client.nick = cmd.args[1]
 		case CMD_TERM:
 			log.Print("exiting the run loop")
-			break
 		case CMD_VOTE:
 			log.Println(cmd.args)
 			if len(cmd.args) < 2 {
@@ -108,7 +106,6 @@ func (h *Hub) run() {
 				fmt.Println("Invalid vote:", cmd.args[1])
 			}
 			h.Clients[cmd.client] = Vote{HasValue: true, V: vote}
-			break
 		default:
 			log.Println("Hub unhandled command:", cmd)
 		}
@@ -124,11 +121,11 @@ func (h *Hub) run() {
 
 		if len(h.Clients) == 0 {
 			go func() {
-				timeOut := 20
-				timer := time.NewTimer(time.Second * time.Duration(timeOut))
-				log.Printf("waiting for %d seconds.\n", timeOut)
+				timeout := 600
+				timer := time.NewTimer(time.Second * time.Duration(timeout))
+				log.Printf("Hub has no active users. Waiting for %d seconds.\n", timeout)
 				<-timer.C
-				log.Printf("Total %d clients after %d seconds.", len(h.Clients), timeOut)
+				log.Printf("Total %d clients after %d seconds.", len(h.Clients), timeout)
 				if len(h.Clients) == 0 {
 					log.Print("terminating...")
 					h.commands <- command{id: CMD_TERM}
@@ -143,7 +140,7 @@ func (h *Hub) run() {
 func (h *Hub) checkHeartbeat() {
 	for {
 		for k := range h.Clients {
-			if time.Now().Sub(k.lastActivity) > heartbeatTimeout {
+			if time.Since(k.lastActivity) > heartbeatTimeout {
 				log.Println("Client heartbeat timeout:", k.nick)
 				h.commands <- command{id: CMD_QUIT, client: k}
 			}
