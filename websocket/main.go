@@ -36,7 +36,7 @@ func main() {
 		hubName := path.Base(r.URL.Path)
 		hub, exists := hubs[hubName]
 		if !exists {
-			log.Println("Creating room:" + hubName)
+			log.Println("Creating room: " + hubName)
 			hub = newHub(hubName, terminate)
 			go hub.run()
 			go hub.checkHeartbeat()

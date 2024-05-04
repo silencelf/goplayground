@@ -42,6 +42,7 @@ var upgrader = websocket.Upgrader{
 type Client struct {
 	id   string
 	nick string
+	uid  string
 	hub  *Hub
 
 	// The websocket connection.
@@ -197,6 +198,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	client.commands <- command{
 		id:     CMD_JOIN,
 		client: client,
+		args:   []string{"/join"},
 	}
 
 	// Allow collection of memory referenced by the caller by doing all work in

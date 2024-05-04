@@ -31,10 +31,16 @@ export default function Room({ params }: { params: { roomId: string } }) {
       if (localStorage["poker_user"]) {
         try {
           const user = JSON.parse(localStorage["poker_user"])
+          console.log('current user from localStorage: ');
+          console.log(user);
           setUser(user);
           setUserLoaded(true);
-          room.send(`/nick ${user.name}`);
-          room.send(`/list ${user.name}`);
+          setTimeout(500, () => {
+            console.log('trying to set name and merge client:')
+            //room.send(`/nick ${user.name}`);
+            //room.send(`/merge ${user.name}`);
+            //room.send(`/list ${user.name}`);
+          })
         } catch (e) {
           console.log(e);
         }
@@ -44,7 +50,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
       setUserLoaded(false);
       console.log('cleanup user loading...');
     };
-  }, []);
+  }, [params.roomId]);
 
 
   const onMessage = useCallback(function (m: string) {
@@ -71,11 +77,12 @@ export default function Room({ params }: { params: { roomId: string } }) {
       }
 
       if (payload.type === 'id') {
+        console.log(payload);
         setClientId(payload.value);
       }
     });
 
-  }, [])
+  }, [params.roomId]);
 
   const room = useWebSocket({
     roomId: params.roomId,
@@ -125,7 +132,7 @@ export default function Room({ params }: { params: { roomId: string } }) {
 
   return (
     <main className="flex min-h-screen flex-col items-cente justify-normal p-4 lg:p-24">
-      {userLoaded && (
+      {!userLoaded && (
         <UserName
           userName={user?.name}
           onConfirmClick={(name) => saveUser({ name })}
@@ -165,11 +172,12 @@ export default function Room({ params }: { params: { roomId: string } }) {
         <ul className="flex flex-wrap justify-center">
           {hub.clients.map(({ id, nick, vote, shape }: { id: string, nick: string, vote: Vote, shape: string }) => (
             <li key={id} className="px-16 py-2">
+              <div className="text-center">{id}</div>
               <div className="bg-gradient-to-br from-cyan-300 to-blue-300  w-24 h-36 rounded-lg text-center inline-block shadow-md text-poker hover:border">
                 {
                   // display the vote in bold if the hub is unveiled, otherwise display the shape
-                  hub.isUnveiled && vote.hasValue ? (
-                    <span>{vote.v}</span>
+                  (clientId === id || hub.isUnveiled) ? (
+                    <span>{vote.v ?? '?'}</span>
                   ) : (
                     <span>{shape}</span>
                   )

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 )
@@ -37,41 +36,39 @@ func newHub(name string, terminate chan *Hub) *Hub {
 
 func (h *Hub) run() {
 	for cmd := range h.commands {
+		log.Println(cmd.client.id, cmd.args)
 		switch cmd.id {
 		case CMD_JOIN:
-			fmt.Println("join the room:", cmd.client)
+			log.Println("join the room: ", cmd.client)
 			h.Clients[cmd.client] = Vote{HasValue: false}
 			// send the client id to the client
-			cmd.client.send <- []byte(fmt.Sprintf(`{"type": "id", "value": "%s"}`, cmd.client.id))
+			if id, err := json.Marshal(Response{Type: "id", Value: cmd.client.id}); err == nil {
+				cmd.client.send <- id
+			}
 		case CMD_List:
 		case CMD_UNVEIL:
 			h.IsUnveiled = true
 		case CMD_MERGE:
-			// merge the client with another client
-			// the second parameter is the client GUID
-			// First, find the client using the GUID
-			// Then, merge the two clients
-			// Finally, remove orignal client as the connection is already broken
 			if len(cmd.args) < 2 {
 				log.Println("invalid merge command:", cmd.args)
 				continue
 			}
 			// find the client
-			var client *Client
+			var clients []*Client
 			for k := range h.Clients {
-				if k.id == cmd.args[1] {
-					client = k
-					break
+				// remove all clients with the same uid
+				if k.uid == cmd.args[1] && k.id != cmd.client.id {
+					clients = append(clients, k)
 				}
 			}
-			if client == nil {
+			if len(clients) == 0 {
 				log.Println("merge: client not found:", cmd.args[1])
 				continue
 			}
-			// copy the votes from the client to the current client
-			h.Clients[cmd.client] = h.Clients[client]
-			// delete the client we found as it's already broken
-			delete(h.Clients, client)
+			for _, c := range clients {
+				log.Println("merging client:", c.id, c.uid)
+				delete(h.Clients, c)
+			}
 		case CMD_CLEAR:
 			// veil the room and reset votes
 			h.IsUnveiled = false
@@ -94,7 +91,6 @@ func (h *Hub) run() {
 		case CMD_TERM:
 			log.Print("exiting the run loop")
 		case CMD_VOTE:
-			log.Println(cmd.args)
 			if len(cmd.args) < 2 {
 				log.Println("invalid rename command:", cmd.args)
 				continue
