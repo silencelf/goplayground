@@ -35,12 +35,11 @@ export default function Room({ params }: { params: { roomId: string } }) {
           console.log(user);
           setUser(user);
           setUserLoaded(true);
-          setTimeout(500, () => {
+          setTimeout(() => {
             console.log('trying to set name and merge client:')
-            //room.send(`/nick ${user.name}`);
-            //room.send(`/merge ${user.name}`);
-            //room.send(`/list ${user.name}`);
-          })
+            room.send(`/nick ${user.name}`);
+            room.send(`/merge ${user.name}`);
+          }, 500)
         } catch (e) {
           console.log(e);
         }
@@ -172,7 +171,6 @@ export default function Room({ params }: { params: { roomId: string } }) {
         <ul className="flex flex-wrap justify-center">
           {hub.clients.map(({ id, nick, vote, shape }: { id: string, nick: string, vote: Vote, shape: string }) => (
             <li key={id} className="px-16 py-2">
-              <div className="text-center">{id}</div>
               <div className="bg-gradient-to-br from-cyan-300 to-blue-300  w-24 h-36 rounded-lg text-center inline-block shadow-md text-poker hover:border">
                 {
                   // display the vote in bold if the hub is unveiled, otherwise display the shape
