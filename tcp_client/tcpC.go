@@ -26,10 +26,10 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Println(">> ")
 		text, _ := reader.ReadString('\n')
-		fmt.Fprintf(c, text + "\n")
+		fmt.Fprintf(c, text+"\n")
 
 		message, _ := bufio.NewReader(c).ReadString('\n')
-		fmt.Println("->: " + message)
+		fmt.Println(c.RemoteAddr().String(), "->:", message)
 		if strings.TrimSpace(string(text)) == "STOP" {
 			fmt.Println("TCP client existing...")
 			return
